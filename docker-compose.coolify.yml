@@ -1,0 +1,55 @@
+# Deploy on Coolify (or any platform with its own reverse proxy + HTTPS, e.g. Dokploy, CapRover).
+# The platform's proxy (Traefik/Caddy) terminates HTTPS and routes your domain to the "app" service on port 8000.
+# No host ports are published and no Caddy is included (the platform already owns ports 80/443).
+#
+# Coolify: Build pack "Docker Compose", Compose file "/docker-compose.coolify.yml",
+#          then set the domain of the "app" service (e.g. https://voice.example.com) and deploy.
+
+services:
+  models:
+    build: .
+    image: voice-biomarker:latest
+    command: ["python", "scripts/download_model.py"]
+    environment:
+      HF_HUB_OFFLINE: "0"
+      TRANSFORMERS_OFFLINE: "0"
+    volumes:
+      - models:/app/models
+    healthcheck:
+      disable: true                    # one-shot job
+    restart: "no"
+
+  app:
+    build: .
+    image: voice-biomarker:latest
+    depends_on:
+      models:
+        condition: service_completed_successfully
+    environment:
+      # Coolify: generates a domain for this service and routes it to container port 8000
+      - SERVICE_FQDN_APP_8000
+      - APP_ENV=production
+      - TORCH_THREADS=${TORCH_THREADS:-2}
+      - MAX_WAITING_ANALYSES=${MAX_WAITING_ANALYSES:-4}
+      - RATE_LIMIT_ANALYZE_PER_HOUR=${RATE_LIMIT_ANALYZE_PER_HOUR:-20}
+      - RATE_LIMIT_LANGUAGE_PER_HOUR=${RATE_LIMIT_LANGUAGE_PER_HOUR:-120}
+      - DAM_THRESHOLDS=${DAM_THRESHOLDS:-official}
+      - API_KEYS=${API_KEYS:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
+      - RATE_LIMIT_API_PER_HOUR=${RATE_LIMIT_API_PER_HOUR:-200}
+    volumes:
+      - models:/app/models:ro
+    tmpfs:
+      - /tmp:size=128m,mode=1777       # uploaded audio lives in RAM only
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    expose:
+      - "8000"
+    mem_limit: ${APP_MEMORY_LIMIT:-4g}
+    restart: unless-stopped
+
+volumes:
+  models:

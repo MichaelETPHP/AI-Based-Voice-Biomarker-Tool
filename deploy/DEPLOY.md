@@ -1,5 +1,8 @@
 # Deploy to your VPS (Docker Compose + automatic HTTPS)
 
+> **Using Coolify, Dokploy or another panel with its own proxy?** Use **`docker-compose.coolify.yml`**, not `docker-compose.yml`. The panel provides the domain and HTTPS, so Caddy and ports 80/443 must not be in the compose file.
+> In Coolify: Build pack **Docker Compose**, Compose file **`/docker-compose.coolify.yml`**, then set the **app** service's domain (for example `https://voice.example.com`, or a free `https://voice.<your-ip>.sslip.io`) and deploy. The microphone needs **HTTPS**; a plain `http://IP:port` won't work on phones.
+
 Phones only allow the microphone over **HTTPS**, so the stack includes **Caddy**, which gets and renews a free Let's Encrypt certificate automatically.
 
 ```
