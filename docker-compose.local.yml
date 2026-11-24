@@ -1,0 +1,46 @@
+# Local Docker run on your own PC (no domain / HTTPS needed: browsers allow the mic on localhost).
+#   run-docker.bat            (Windows, one click)
+#   docker compose -f docker-compose.local.yml up -d --build      (any OS)
+# Open http://localhost:8080. For a public server use docker-compose.yml (Caddy + HTTPS) instead.
+
+name: voice-biomarker-local
+
+services:
+  models:
+    build: .
+    image: voice-biomarker:latest
+    command: ["python", "scripts/download_model.py"]
+    user: "0:0"                       # may need to write into ./models on first run
+    environment:
+      HF_HUB_OFFLINE: "0"
+      TRANSFORMERS_OFFLINE: "0"
+    volumes:
+      - ./models:/app/models          # reuses models already downloaded by run.bat (no 1.9 GB re-download)
+    healthcheck:
+      disable: true
+    restart: "no"
+
+  app:
+    image: voice-biomarker:latest
+    depends_on:
+      models:
+        condition: service_completed_successfully
+    environment:
+      APP_ENV: production
+      TORCH_THREADS: ${TORCH_THREADS:-2}
+      API_KEYS: ${API_KEYS:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      RATE_LIMIT_API_PER_HOUR: ${RATE_LIMIT_API_PER_HOUR:-200}
+    volumes:
+      - ./models:/app/models:ro
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      - "127.0.0.1:8080:8000"         # only reachable from this PC
+    mem_limit: ${APP_MEMORY_LIMIT:-4g}
+    restart: unless-stopped

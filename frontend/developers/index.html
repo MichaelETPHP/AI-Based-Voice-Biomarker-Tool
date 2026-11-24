@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#FFFFFF">
+  <title>API Documentation · AI-Based Voice Biomarker Tool</title>
+  <meta name="description" content="Integrate voice biomarker screening for depression and anxiety into your own application: REST API, OpenAPI spec, and guides for MuleSoft, AWS and Salesforce.">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+  <link rel="preload" href="../assets/fonts/excon/Excon-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="docs.css?v=3">
+</head>
+<body>
+<header class="topbar">
+  <button class="menu-btn" id="menu-btn" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar"><i class="fa-solid fa-bars"></i></button>
+  <a class="brand" href="./">
+    <span class="brand-tile" aria-hidden="true"><span class="mark"></span></span>
+    <span class="brand-text">AI-Based Voice Biomarker Tool</span>
+    <span class="badge">API Docs</span>
+  </a>
+  <nav class="top-actions">
+    <a class="top-link" href="../"><i class="fa-solid fa-arrow-left"></i><span>Back to app</span></a>
+    <a class="btn btn-primary btn-sm" href="/v1/openapi.json" download="voice-biomarker-openapi.json"><i class="fa-solid fa-file-code"></i><span>OpenAPI spec</span></a>
+  </nav>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar" aria-label="Documentation">
+    <nav>
+      <p class="nav-group">Getting started</p>
+      <a href="#introduction" class="nav-link">Introduction</a>
+      <a href="#quickstart" class="nav-link">Quickstart</a>
+      <a href="#authentication" class="nav-link">Authentication</a>
+      <a href="#audio" class="nav-link">Audio specification</a>
+
+      <p class="nav-group">API reference</p>
+      <a href="#health" class="nav-link"><span class="m get">GET</span>Health</a>
+      <a href="#analyze" class="nav-link"><span class="m post">POST</span>Analyze voice</a>
+      <a href="#language" class="nav-link"><span class="m post">POST</span>Language check</a>
+      <a href="#response" class="nav-link">Response fields</a>
+      <a href="#errors" class="nav-link">Errors</a>
+      <a href="#limits" class="nav-link">Rate limits &amp; timeouts</a>
+
+      <p class="nav-group">Integrations</p>
+      <a href="#mulesoft" class="nav-link">MuleSoft (Mule 4)</a>
+      <a href="#aws" class="nav-link">AWS (Lambda)</a>
+      <a href="#salesforce" class="nav-link">Salesforce (Apex)</a>
+      <a href="#openapi" class="nav-link">Postman &amp; OpenAPI</a>
+
+      <p class="nav-group">More</p>
+      <a href="#responsible-use" class="nav-link">Responsible use</a>
+      <a href="#admin" class="nav-link">Server administration</a>
+    </nav>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <main class="content" id="content">
+
+    <!-- ===================== INTRODUCTION ===================== -->
+    <section id="introduction" class="hero">
+      <p class="eyebrow">Voice Biomarker API · v1</p>
+      <h1>Add voice-based mental health screening to your application</h1>
+      <p class="lead">Send 30 seconds of English speech. Get back screening signals for <strong>depression</strong> and <strong>anxiety</strong>, derived from <em>how</em> a person speaks: tone, energy, rhythm and pauses, not the words. Powered by the open-source Kintsugi Health DAM model.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#quickstart"><i class="fa-solid fa-bolt"></i>Quickstart</a>
+        <a class="btn btn-ghost" href="#analyze"><i class="fa-solid fa-book-open"></i>API reference</a>
+      </div>
+
+      <div class="steps">
+        <article class="step-card">
+          <span class="step-num">01</span>
+          <i class="fa-solid fa-microphone-lines step-icon"></i>
+          <h3>Record</h3>
+          <p>Capture 25–40 s of natural English speech from one person, saved as a WAV file.</p>
+        </article>
+        <article class="step-card">
+          <span class="step-num">02</span>
+          <i class="fa-solid fa-paper-plane step-icon"></i>
+          <h3>Send</h3>
+          <p>POST the WAV to <code>/v1/analyze</code> with your API key, from any backend or integration platform.</p>
+        </article>
+        <article class="step-card">
+          <span class="step-num">03</span>
+          <i class="fa-solid fa-chart-simple step-icon"></i>
+          <h3>Receive</h3>
+          <p>Get levels, raw scores and a screening signal as JSON in about 5–15 seconds. The audio is deleted immediately.</p>
+        </article>
+      </div>
+
+      <div class="callout info">
+        <i class="fa-solid fa-circle-info"></i>
+        <div><strong>Base URL</strong> for this server: <code class="base-url">{{BASE}}</code>. All endpoints are versioned under <code>/v1</code>.</div>
+      </div>
+    </section>
+
+    <!-- ===================== QUICKSTART ===================== -->
+    <section id="quickstart">
+      <h2>Quickstart</h2>
+      <ol class="numbered">
+        <li><strong>Get an API key</strong> from the administrator of this server (see <a href="#authentication">Authentication</a>).</li>
+        <li><strong>Check the service</strong> is up. It needs no key:
+          <div class="code" data-lang="bash"><pre><code>curl {{BASE}}/v1/health</code></pre></div>
+        </li>
+        <li><strong>Analyze a recording</strong> (<code>recording.wav</code>: 16-bit PCM, mono, 25–40 s):
+          <div class="code" data-lang="bash"><pre><code>curl -X POST {{BASE}}/v1/analyze \
+  -H "Authorization: Bearer $VOICE_API_KEY" \
+  -H "Content-Type: audio/wav" \
+  --data-binary @recording.wav \
+  --max-time 120</code></pre></div>
+        </li>
+        <li><strong>Read the result</strong>: <code>depression.level</code>, <code>anxiety.level</code> and the <code>screen</code> signal. See <a href="#response">Response fields</a>.</li>
+      </ol>
+    </section>
+
+    <!-- ===================== AUTHENTICATION ===================== -->
+    <section id="authentication">
+      <h2>Authentication</h2>
+      <p>Every request except <code>/v1/health</code> and <code>/v1/openapi.json</code> needs an API key. Send it in <strong>one</strong> of these headers:</p>
+      <div class="code" data-lang="http"><pre><code>Authorization: Bearer YOUR_API_KEY
+# or
+X-API-Key: YOUR_API_KEY</code></pre></div>
+      <div class="callout warn">
+        <i class="fa-solid fa-shield-halved"></i>
+        <div><strong>Keep keys on the server.</strong> Never put an API key in a mobile app, browser JavaScript or a public repository. Call this API from your backend, an integration platform (MuleSoft, AWS, Salesforce) or a secrets-backed function. Store the key in a secrets manager such as AWS Secrets Manager, a Salesforce Named/External Credential or MuleSoft secure properties.</div>
+      </div>
+    </section>
+
+    <!-- ===================== AUDIO ===================== -->
+    <section id="audio">
+      <h2>Audio specification</h2>
+      <p>The model was trained on short, natural English speech. Recordings outside this specification are rejected with a clear error, or produce unreliable results.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Property</th><th>Requirement</th></tr></thead>
+        <tbody>
+          <tr><td>Container / encoding</td><td>WAV, 16-bit PCM (signed little-endian)</td></tr>
+          <tr><td>Channels</td><td><strong>Mono</strong> (1 channel)</td></tr>
+          <tr><td>Sample rate</td><td>Any rate. It is resampled to 16 kHz internally, so 16 kHz is ideal.</td></tr>
+          <tr><td>Duration</td><td><strong>25–40 seconds</strong> for <code>/v1/analyze</code> (30 s recommended); 3–40 s for <code>/v1/language</code></td></tr>
+          <tr><td>Size</td><td>Maximum 10 MB (30 s at 16 kHz is about 1 MB)</td></tr>
+          <tr><td>Content</td><td>One speaker, <strong>English only</strong>, natural speech (for example "describe your day"), little background noise</td></tr>
+          <tr><td>How to send</td><td>Raw body with <code>Content-Type: audio/wav</code> (recommended), or the multipart form field <code>audio</code></td></tr>
+        </tbody>
+      </table></div>
+      <p>Convert other formats (m4a, mp3, ogg, stereo) with <a href="https://ffmpeg.org" rel="noopener">ffmpeg</a>:</p>
+      <div class="code" data-lang="bash"><pre><code>ffmpeg -i input.m4a -ac 1 -ar 16000 -sample_fmt s16 -t 35 recording.wav</code></pre></div>
+    </section>
+
+    <!-- ===================== HEALTH ===================== -->
+    <section id="health" class="endpoint">
+      <h2>Health</h2>
+      <div class="ep-line"><span class="m get">GET</span><code>/v1/health</code><button class="copy-mini" data-copy="{{BASE}}/v1/health" aria-label="Copy URL"><i class="fa-regular fa-copy"></i></button></div>
+      <p>Public, with no key. Returns whether the service is running and the AI model is loaded. Use it for uptime monitoring and readiness checks.</p>
+      <div class="code" data-lang="json"><pre><code>{
+  "status": "ok",
+  "model_loaded": true,
+  "language_check": true,
+  "api_version": "1"
+}</code></pre></div>
+    </section>
+
+    <!-- ===================== ANALYZE ===================== -->
+    <section id="analyze" class="endpoint">
+      <h2>Analyze voice</h2>
+      <div class="ep-line"><span class="m post">POST</span><code>/v1/analyze</code><button class="copy-mini" data-copy="{{BASE}}/v1/analyze" aria-label="Copy URL"><i class="fa-regular fa-copy"></i></button></div>
+      <p>Checks that the speech is English, then runs the DAM model. Returns depression (3 levels) and anxiety (4 levels) results with raw scores and a binary screening signal. Typical time: <strong>5–15 s</strong>.</p>
+
+      <h3>Request</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Part</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Header</td><td><code>Authorization: Bearer &lt;key&gt;</code> or <code>X-API-Key: &lt;key&gt;</code></td></tr>
+          <tr><td>Header</td><td><code>Content-Type: audio/wav</code> (raw body) or <code>multipart/form-data</code></td></tr>
+          <tr><td>Body</td><td>The WAV bytes, or a multipart field named <code>audio</code></td></tr>
+          <tr><td>Optional header</td><td><code>X-Request-ID</code>: your own correlation ID, echoed back in the response</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="tabs" data-tabs>
+        <div class="tab-list" role="tablist">
+          <button role="tab" data-tab="curl">cURL</button>
+          <button role="tab" data-tab="python">Python</button>
+          <button role="tab" data-tab="node">Node.js</button>
+          <button role="tab" data-tab="browser">Browser (CORS)</button>
+        </div>
+        <div class="tab-panel" data-panel="curl"><div class="code" data-lang="bash"><pre><code># Raw WAV body (recommended)
+curl -X POST {{BASE}}/v1/analyze \
+  -H "Authorization: Bearer $VOICE_API_KEY" \
+  -H "Content-Type: audio/wav" \
+  --data-binary @recording.wav \
+  --max-time 120
+
+# Or multipart form upload
+curl -X POST {{BASE}}/v1/analyze \
+  -H "Authorization: Bearer $VOICE_API_KEY" \
+  -F "audio=@recording.wav;type=audio/wav"</code></pre></div></div>
+        <div class="tab-panel" data-panel="python"><div class="code" data-lang="python"><pre><code>import os
+import requests  # pip install requests
+
+API = "{{BASE}}"
+KEY = os.environ["VOICE_API_KEY"]
+
+with open("recording.wav", "rb") as f:
+    r = requests.post(
+        f"{API}/v1/analyze",
+        data=f,
+        headers={"Authorization": f"Bearer {KEY}", "Content-Type": "audio/wav"},
+        timeout=120,
+    )
+
+body = r.json()
+if r.ok:
+    print("Depression level:", body["depression"]["level"], body["depression"]["label"])
+    print("Anxiety level:", body["anxiety"]["level"], body["anxiety"]["label"])
+else:
+    print("Error", r.status_code, body["error"], "-", body["message"],
+          "| request id:", r.headers.get("X-Request-ID"))</code></pre></div></div>
+        <div class="tab-panel" data-panel="node"><div class="code" data-lang="javascript"><pre><code>// Node.js 18+ (built-in fetch)
+import { readFile } from "node:fs/promises";
+
+const API = "{{BASE}}";
+const wav = await readFile("recording.wav");
+
+const res = await fetch(`${API}/v1/analyze`, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.VOICE_API_KEY}`,
+    "Content-Type": "audio/wav",
+  },
+  body: wav,
+  signal: AbortSignal.timeout(120_000),
+});
+
+const body = await res.json();
+if (!res.ok) throw new Error(`${body.error}: ${body.message} (request ${res.headers.get("x-request-id")})`);
+console.log(body.depression.level, body.anxiety.level, body.depression.screen?.result);</code></pre></div></div>
+        <div class="tab-panel" data-panel="browser"><div class="code" data-lang="javascript"><pre><code>// Only if the server admin allowed your origin in CORS_ORIGINS.
+// Prefer calling the API from your backend so the key stays secret.
+const form = new FormData();
+form.append("audio", wavBlob, "recording.wav");   // Blob from your recorder
+
+const res = await fetch("{{BASE}}/v1/analyze", {
+  method: "POST",
+  headers: { "X-API-Key": shortLivedOrProxiedKey },
+  body: form,
+});
+const body = await res.json();</code></pre></div></div>
+      </div>
+
+      <h3>Response <span class="status ok">200</span></h3>
+      <div class="code" data-lang="json"><pre><code>{
+  "depression": {
+    "level": 1,
+    "label": "Possible signs of mild to moderate depression",
+    "raw": -0.4966,
+    "thresholds": [-0.6699, -0.2908],
+    "screen": {
+      "result": "positive",
+      "label": "PHQ-9 >= 10",
+      "lower": -1.0415, "upper": -0.6438,
+      "sensitivity": 0.7134, "specificity": 0.7401
+    }
+  },
+  "anxiety": {
+    "level": 1,
+    "label": "Possible signs of mild anxiety",
+    "raw": -0.2895,
+    "thresholds": [-0.7939, -0.2173, 0.1521],
+    "screen": { "result": "positive", "label": "GAD-7 >= 10", "...": "..." }
+  },
+  "threshold_set": "official",
+  "language": { "code": "en", "name": "English", "english_prob": 0.9972 },
+  "duration_s": 30.0,
+  "elapsed_s": 6.97
+}</code></pre></div>
+    </section>
+
+    <!-- ===================== LANGUAGE ===================== -->
+    <section id="language" class="endpoint">
+      <h2>Language check</h2>
+      <div class="ep-line"><span class="m post">POST</span><code>/v1/language</code><button class="copy-mini" data-copy="{{BASE}}/v1/language" aria-label="Copy URL"><i class="fa-regular fa-copy"></i></button></div>
+      <p>Detects whether 3–40 s of audio is English speech, without running the depression and anxiety model. Use it to validate a recording, or to stop a live recording early. <code>/v1/analyze</code> runs this check automatically and returns <code>422 not_english</code> when it fails.</p>
+      <div class="code" data-lang="bash"><pre><code>curl -X POST {{BASE}}/v1/language \
+  -H "X-API-Key: $VOICE_API_KEY" \
+  -H "Content-Type: audio/wav" \
+  --data-binary @first-10-seconds.wav</code></pre></div>
+      <div class="code" data-lang="json"><pre><code>{ "language": "en", "language_name": "English", "confidence": 0.9936, "english_prob": 0.9936, "is_english": true }</code></pre></div>
+    </section>
+
+    <!-- ===================== RESPONSE FIELDS ===================== -->
+    <section id="response">
+      <h2>Response fields</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Field</th><th>Type</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>depression.level</code></td><td>integer</td><td><code>0</code> none (PHQ-9 0–9) · <code>1</code> mild to moderate (10–14) · <code>2</code> severe (15+)</td></tr>
+          <tr><td><code>anxiety.level</code></td><td>integer</td><td><code>0</code> none (GAD-7 0–4) · <code>1</code> mild (5–9) · <code>2</code> moderate (10–14) · <code>3</code> severe (15+)</td></tr>
+          <tr><td><code>*.label</code></td><td>string</td><td>Plain-English description of the level</td></tr>
+          <tr><td><code>*.raw</code></td><td>number</td><td>Raw model score; higher means more signs. Use it for trends over time.</td></tr>
+          <tr><td><code>*.thresholds</code></td><td>number[]</td><td>The score cut-offs between levels (official model thresholds)</td></tr>
+          <tr><td><code>*.screen.result</code></td><td>string</td><td><code>positive</code> (likely questionnaire score ≥ 10) · <code>negative</code> (unlikely) · <code>indeterminate</code> (grey zone, so re-record)</td></tr>
+          <tr><td><code>*.screen.sensitivity</code> / <code>specificity</code></td><td>number</td><td>Measured on the public KintsugiHealth/dam-dataset test split (about 71–75%)</td></tr>
+          <tr><td><code>language</code></td><td>object</td><td>Detected language and the probability that it is English</td></tr>
+          <tr><td><code>duration_s</code> / <code>elapsed_s</code></td><td>number</td><td>Audio length and server processing time</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout info"><i class="fa-solid fa-lightbulb"></i><div><strong>Which field should I use?</strong> For a yes/no follow-up decision, use <code>screen.result</code>. To show severity, use <code>level</code>. To track a person over time, use <code>raw</code>.</div></div>
+    </section>
+
+    <!-- ===================== ERRORS ===================== -->
+    <section id="errors">
+      <h2>Errors</h2>
+      <p>Errors use standard HTTP status codes and always return JSON with a machine-readable <code>error</code> and a human-readable <code>message</code>:</p>
+      <div class="code" data-lang="json"><pre><code>{ "error": "bad_duration", "message": "The recording is 12.0 s long. Please record about 30 seconds (25-40 s)." }</code></pre></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Status</th><th><code>error</code></th><th>Cause and what to do</th></tr></thead>
+        <tbody>
+          <tr><td><span class="status warn">400</span></td><td><code>missing_audio</code></td><td>No audio in the body or in the <code>audio</code> field</td></tr>
+          <tr><td><span class="status warn">400</span></td><td><code>invalid_wav</code></td><td>Not a 16-bit PCM mono WAV. Convert it with ffmpeg.</td></tr>
+          <tr><td><span class="status warn">400</span></td><td><code>bad_duration</code></td><td>Outside 25–40 s (<code>/v1/analyze</code>) or 3–40 s (<code>/v1/language</code>)</td></tr>
+          <tr><td><span class="status warn">400</span></td><td><code>silent</code></td><td>No audible speech. Check the microphone.</td></tr>
+          <tr><td><span class="status warn">401</span></td><td><code>unauthorized</code></td><td>Missing or invalid API key</td></tr>
+          <tr><td><span class="status warn">413</span></td><td><code>too_large</code></td><td>Larger than 10 MB</td></tr>
+          <tr><td><span class="status warn">422</span></td><td><code>not_english</code></td><td>The speech is not English (response includes <code>language_name</code>). Re-record in English.</td></tr>
+          <tr><td><span class="status warn">429</span></td><td><code>rate_limited</code></td><td>Hourly limit for your key reached. Retry later with backoff.</td></tr>
+          <tr><td><span class="status err">500</span></td><td><code>analysis_failed</code></td><td>Unexpected failure. Retry once, then contact support with the <code>X-Request-ID</code>.</td></tr>
+          <tr><td><span class="status err">503</span></td><td><code>busy</code></td><td>The server is at capacity. Retry after a few seconds (exponential backoff).</td></tr>
+          <tr><td><span class="status err">503</span></td><td><code>model_not_loaded</code></td><td>The server is starting up. Retry in a minute.</td></tr>
+          <tr><td><span class="status err">503</span></td><td><code>api_not_configured</code></td><td>No API keys are configured on the server yet. Contact the administrator.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout info"><i class="fa-solid fa-rotate"></i><div><strong>Retry policy:</strong> retry <code>429</code>, <code>503</code> and network errors with exponential backoff (2 s, 4 s, 8 s…). Don't retry other <code>4xx</code> errors; fix the request instead.</div></div>
+    </section>
+
+    <!-- ===================== LIMITS ===================== -->
+    <section id="limits">
+      <h2>Rate limits &amp; timeouts</h2>
+      <ul class="checks">
+        <li><strong>Per-key limit:</strong> 200 requests per hour by default (configurable by the administrator). After that you get <code>429</code>.</li>
+        <li><strong>Processing:</strong> analyses run one at a time per server. When the queue is full you get <code>503 busy</code>.</li>
+        <li><strong>Timeouts:</strong> set your client timeout to at least <strong>120 s</strong>. Typical responses take 5–15 s.</li>
+        <li><strong>Tracing:</strong> every response has an <code>X-Request-ID</code> header. Log it next to your own records.</li>
+      </ul>
+    </section>
+
+    <!-- ===================== MULESOFT ===================== -->
+    <section id="mulesoft">
+      <h2>MuleSoft (Mule 4)</h2>
+      <p>Import <a href="/v1/openapi.json">the OpenAPI spec</a> into <strong>Anypoint Exchange / Design Center</strong> to generate a REST connector with REST Connect. You can also call the API directly with the HTTP Request connector. The flow payload must be the WAV bytes, for example from the File, SFTP or Amazon S3 connector.</p>
+      <div class="code" data-lang="xml"><pre><code>&lt;!-- config.yaml: voice.host=your-domain.example ; voice.apiKey in secure properties --&gt;
+&lt;http:request-config name="Voice_API_Config"&gt;
+  &lt;http:request-connection protocol="HTTPS" host="${voice.host}" port="443" /&gt;
+&lt;/http:request-config&gt;
+
+&lt;flow name="analyze-voice-flow"&gt;
+  &lt;!-- payload = WAV bytes --&gt;
+  &lt;http:request method="POST" config-ref="Voice_API_Config"
+                path="/v1/analyze" responseTimeout="120000"&gt;
+    &lt;http:headers&gt;&lt;![CDATA[#[{
+      "Authorization": "Bearer " ++ p('secure::voice.apiKey'),
+      "Content-Type": "audio/wav",
+      "X-Request-ID": correlationId
+    }]]]&gt;&lt;/http:headers&gt;
+  &lt;/http:request&gt;
+
+  &lt;ee:transform&gt;
+    &lt;ee:message&gt;&lt;ee:set-payload&gt;&lt;![CDATA[%dw 2.0
+output application/json
+---
+{
+  depressionLevel: payload.depression.level,
+  anxietyLevel:    payload.anxiety.level,
+  followUp:        payload.depression.screen.result == "positive"
+                   or payload.anxiety.screen.result == "positive"
+}]]&gt;&lt;/ee:set-payload&gt;&lt;/ee:message&gt;
+  &lt;/ee:transform&gt;
+
+  &lt;error-handler&gt;
+    &lt;!-- HTTP:TOO_MANY_REQUESTS / HTTP:SERVICE_UNAVAILABLE -&gt; retry with until-successful --&gt;
+    &lt;on-error-propagate type="HTTP:BAD_REQUEST, HTTP:UNAUTHORIZED"&gt;
+      &lt;logger level="WARN" message="#[error.errorMessage.payload.message]" /&gt;
+    &lt;/on-error-propagate&gt;
+  &lt;/error-handler&gt;
+&lt;/flow&gt;</code></pre></div>
+    </section>
+
+    <!-- ===================== AWS ===================== -->
+    <section id="aws">
+      <h2>AWS (Lambda)</h2>
+      <p>This example analyzes every WAV uploaded to an S3 bucket. It uses Python 3.12 with no extra libraries. Set the Lambda timeout to <strong>2 minutes</strong>, and store the key in AWS Secrets Manager or an encrypted environment variable.</p>
+      <div class="code" data-lang="python"><pre><code>import json, os, urllib.error, urllib.parse, urllib.request
+import boto3
+
+s3 = boto3.client("s3")
+API = os.environ["VOICE_API_URL"]          # {{BASE}}
+KEY = os.environ["VOICE_API_KEY"]          # or fetch from Secrets Manager
+
+def handler(event, context):
+    rec = event["Records"][0]["s3"]
+    bucket = rec["bucket"]["name"]
+    key = urllib.parse.unquote_plus(rec["object"]["key"])
+    wav = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
+
+    req = urllib.request.Request(
+        f"{API}/v1/analyze", data=wav, method="POST",
+        headers={"Authorization": f"Bearer {KEY}", "Content-Type": "audio/wav"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            result = json.load(resp)
+    except urllib.error.HTTPError as e:
+        result = {"status": e.code, **json.load(e)}   # {"error": ..., "message": ...}
+
+    # e.g. save next to the recording
+    s3.put_object(Bucket=bucket, Key=key + ".result.json",
+                  Body=json.dumps(result).encode(), ContentType="application/json")
+    return result</code></pre></div>
+      <p class="muted">Other AWS options: Step Functions (an HTTP task calling the Lambda), EventBridge API Destinations (the key as a connection header), or importing the OpenAPI spec into API Gateway as a managed proxy.</p>
+    </section>
+
+    <!-- ===================== SALESFORCE ===================== -->
+    <section id="salesforce">
+      <h2>Salesforce (Apex)</h2>
+      <ol class="numbered">
+        <li>In Setup, create an <strong>External Credential</strong> with a principal parameter <code>ApiKey</code>, and a <strong>Named Credential</strong> <code>Voice_Biomarker_API</code> with URL <code>{{BASE}}</code>.</li>
+        <li>Add a custom header to the Named Credential: <code>Authorization</code> = <code>Bearer {!$Credential.Voice_Biomarker_API.ApiKey}</code>.</li>
+        <li>Call it from Apex. The recording is a File (ContentVersion), for example one uploaded from a Lightning page or Experience Cloud.</li>
+      </ol>
+      <div class="code" data-lang="apex"><pre><code>public with sharing class VoiceBiomarkerService {
+
+    public static Map&lt;String, Object&gt; analyze(Id contentVersionId) {
+        ContentVersion cv = [SELECT VersionData FROM ContentVersion WHERE Id = :contentVersionId LIMIT 1];
+
+        HttpRequest req = new HttpRequest();
+        req.setEndpoint('callout:Voice_Biomarker_API/v1/analyze');
+        req.setMethod('POST');
+        req.setHeader('Content-Type', 'audio/wav');
+        req.setBodyAsBlob(cv.VersionData);   // ~1 MB for 30 s at 16 kHz
+        req.setTimeout(120000);              // Apex maximum (120 s)
+
+        HttpResponse res = new Http().send(req);
+        Map&lt;String, Object&gt; body = (Map&lt;String, Object&gt;) JSON.deserializeUntyped(res.getBody());
+        if (res.getStatusCode() != 200) {
+            throw new CalloutException(body.get('error') + ': ' + body.get('message')
+                + ' (request ' + res.getHeader('X-Request-ID') + ')');
+        }
+        return body;   // body.get('depression') -&gt; Map with level, label, raw, screen
+    }
+}</code></pre></div>
+      <div class="callout warn"><i class="fa-solid fa-triangle-exclamation"></i><div>Apex callouts can't run directly in triggers. Use a <code>Queueable</code> with <code>Database.AllowsCallouts</code> or <code>@future(callout=true)</code>. Synchronous Apex has a 6 MB heap limit, which is fine for 30 s recordings.</div></div>
+    </section>
+
+    <!-- ===================== OPENAPI ===================== -->
+    <section id="openapi">
+      <h2>Postman &amp; OpenAPI</h2>
+      <p>The machine-readable contract is an <strong>OpenAPI 3.0</strong> document, generated with this server's address already filled in:</p>
+      <div class="ep-line"><span class="m get">GET</span><code>/v1/openapi.json</code><button class="copy-mini" data-copy="{{BASE}}/v1/openapi.json" aria-label="Copy URL"><i class="fa-regular fa-copy"></i></button></div>
+      <ul class="checks">
+        <li><strong>Postman / Insomnia:</strong> Import, then Link, then paste the URL above. Set the <code>bearerAuth</code> token to your key.</li>
+        <li><strong>MuleSoft:</strong> publish it to Anypoint Exchange, then use REST Connect to generate a connector.</li>
+        <li><strong>AWS API Gateway:</strong> Create API, then Import from OpenAPI.</li>
+        <li><strong>Code generation:</strong> <code>openapi-generator-cli generate -i {{BASE}}/v1/openapi.json -g python -o client</code></li>
+      </ul>
+    </section>
+
+    <!-- ===================== RESPONSIBLE USE ===================== -->
+    <section id="responsible-use">
+      <h2>Responsible use</h2>
+      <div class="callout danger">
+        <i class="fa-solid fa-stethoscope"></i>
+        <div><strong>Research prototype, not a medical device.</strong> Results are screening signals, not a diagnosis. Always show this to end users and direct them to a qualified health professional. Never make clinical decisions from this output alone.</div>
+      </div>
+      <ul class="checks">
+        <li><strong>Consent:</strong> get the speaker's explicit consent before recording and analyzing their voice.</li>
+        <li><strong>English only, one speaker:</strong> other languages are rejected (<code>422</code>). Accuracy for accents and groups under-represented in the training data is not established.</li>
+        <li><strong>Privacy:</strong> this server deletes audio immediately and stores no results. Your own storage of audio and results must follow the laws that apply to you (for example GDPR or HIPAA).</li>
+        <li><strong>Crisis situations:</strong> if a user may be in danger, show local emergency and helpline contacts in your own interface.</li>
+        <li><strong>Attribution:</strong> uses the open-source DAM model by Kintsugi Health (Apache-2.0). Not endorsed by Kintsugi Health.</li>
+      </ul>
+    </section>
+
+    <!-- ===================== ADMIN ===================== -->
+    <section id="admin">
+      <h2>Server administration</h2>
+      <p>For the owner of this deployment. Set these in <code>.env</code> next to <code>docker-compose.yml</code>, then run <code>docker compose up -d</code>.</p>
+      <div class="code" data-lang="bash"><pre><code># One key per client application ("name:key", comma-separated). Names appear in the logs.
+API_KEYS=mulesoft-prod:4f9c...e1,aws-pipeline:a83b...77,salesforce:90d2...c4
+
+# Optional: browser apps on these origins may call /v1 directly
+CORS_ORIGINS=https://app.example.com
+
+# Requests per hour per key (default 200)
+RATE_LIMIT_API_PER_HOUR=200</code></pre></div>
+      <p>Generate a strong key with <code>openssl rand -hex 32</code>. To revoke a key, remove it and restart. Without <code>API_KEYS</code>, the public API is disabled in production (<code>503 api_not_configured</code>), and the web app keeps working.</p>
+    </section>
+
+    <!-- ===================== CTA ===================== -->
+    <section class="cta">
+      <h2>Ready to build?</h2>
+      <p>Download the spec, request a key, and send your first recording in a few minutes.</p>
+      <div class="hero-actions">
+        <a class="btn btn-light" href="/v1/openapi.json" download="voice-biomarker-openapi.json"><i class="fa-solid fa-download"></i>OpenAPI spec</a>
+        <a class="btn btn-outline-light" href="#quickstart"><i class="fa-solid fa-bolt"></i>Quickstart</a>
+      </div>
+    </section>
+
+    <footer class="doc-footer">
+      <span>AI-Based Voice Biomarker Tool · API v1</span>
+      <span>Uses the open-source DAM model by Kintsugi Health. Not endorsed by Kintsugi Health.</span>
+    </footer>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="docs.js?v=2"></script>
+</body>
+</html>

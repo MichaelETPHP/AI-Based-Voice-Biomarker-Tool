@@ -1,0 +1,81 @@
+# AI-Based Voice Biomarker Tool: production stack
+#   models : one-shot job, downloads DAM + Whisper models into the "models" volume (first run only)
+#   app    : FastAPI + PyTorch (CPU), serves the web app and the AI API (internal port 8000)
+#   caddy  : public HTTPS reverse proxy with automatic Let's Encrypt certificates
+#
+# Usage on the VPS:  cp .env.example .env  (edit DOMAIN and ACME_EMAIL)  &&  docker compose up -d --build
+
+name: voice-biomarker
+
+services:
+  models:
+    build: .
+    image: voice-biomarker:latest
+    command: ["python", "scripts/download_model.py"]
+    environment:
+      HF_HUB_OFFLINE: "0"
+      TRANSFORMERS_OFFLINE: "0"
+    volumes:
+      - models:/app/models
+    healthcheck:
+      disable: true                    # one-shot job; the image healthcheck is for the app
+    restart: "no"
+
+  app:
+    image: voice-biomarker:latest
+    depends_on:
+      models:
+        condition: service_completed_successfully
+    environment:
+      APP_ENV: production
+      TORCH_THREADS: ${TORCH_THREADS:-2}
+      MAX_WAITING_ANALYSES: ${MAX_WAITING_ANALYSES:-4}
+      RATE_LIMIT_ANALYZE_PER_HOUR: ${RATE_LIMIT_ANALYZE_PER_HOUR:-20}
+      RATE_LIMIT_LANGUAGE_PER_HOUR: ${RATE_LIMIT_LANGUAGE_PER_HOUR:-120}
+      DAM_THRESHOLDS: ${DAM_THRESHOLDS:-official}
+      # Public API v1 (see /developers/): keys per client, optional CORS, per-key hourly limit
+      API_KEYS: ${API_KEYS:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      RATE_LIMIT_API_PER_HOUR: ${RATE_LIMIT_API_PER_HOUR:-200}
+    volumes:
+      - models:/app/models:ro          # AI models, read-only for the app
+    tmpfs:
+      - /tmp:size=128m,mode=1777       # uploaded audio lives in RAM only and is deleted after each analysis
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    expose:
+      - "8000"                         # not published: only Caddy can reach it
+    mem_limit: ${APP_MEMORY_LIMIT:-4g}
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  caddy:
+    image: caddy:2.8-alpine
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env (e.g. voice.example.com)}
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL in .env (used for Let's Encrypt certificates)}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  models:
+  caddy_data:
+  caddy_config:

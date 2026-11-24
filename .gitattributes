@@ -1,0 +1,16 @@
+# Normalize line endings; keep platform scripts runnable on their platform.
+* text=auto
+*.bat text eol=crlf
+*.sh  text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+deploy/Caddyfile text eol=lf
+
+# Binary assets
+*.png binary
+*.svg text
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary

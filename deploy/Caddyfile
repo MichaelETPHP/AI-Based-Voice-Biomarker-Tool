@@ -1,0 +1,31 @@
+{
+	# Let's Encrypt account e-mail (required in docker-compose.yml)
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Recordings are ~1 MB; reject anything unreasonably large before it reaches the app.
+	request_body {
+		max_size 12MB
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+
+	reverse_proxy app:8000 {
+		# CPU analysis can take up to ~1 minute on small VPS plans.
+		transport http {
+			read_timeout 180s
+			write_timeout 180s
+		}
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

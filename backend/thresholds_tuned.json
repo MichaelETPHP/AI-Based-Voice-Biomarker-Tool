@@ -1,0 +1,82 @@
+{
+  "created": "2026-11-21",
+  "source": "KintsugiHealth/dam-dataset (validation for tuning, test for evaluation) + models/dam/tuning",
+  "screening": {
+    "depression": {
+      "label": "PHQ-9 >= 10",
+      "lower": -1.04150390625,
+      "upper": -0.643798828125,
+      "indet_budget": 0.2,
+      "auc_at_budget": 0.8075,
+      "val": {
+        "sensitivity": 0.7331,
+        "specificity": 0.7328,
+        "indeterminate": 0.1998
+      },
+      "test": {
+        "sensitivity": 0.7134,
+        "specificity": 0.7401,
+        "indeterminate": 0.2015
+      }
+    },
+    "anxiety": {
+      "label": "GAD-7 >= 10",
+      "lower": -0.75244140625,
+      "upper": -0.376953125,
+      "indet_budget": 0.2,
+      "auc_at_budget": 0.7992,
+      "val": {
+        "sensitivity": 0.7255,
+        "specificity": 0.7253,
+        "indeterminate": 0.1998
+      },
+      "test": {
+        "sensitivity": 0.7286,
+        "specificity": 0.7458,
+        "indeterminate": 0.1958
+      }
+    }
+  },
+  "levels": {
+    "depression": {
+      "thresholds": [
+        -0.8162,
+        -0.3113
+      ],
+      "method": "MaxMacroF1OrdinalThresholding (val)",
+      "test": {
+        "macro_f1": 0.4898,
+        "accuracy": 0.5836
+      },
+      "official_thresholds": [
+        -0.6699,
+        -0.2908
+      ],
+      "official_test": {
+        "macro_f1": 0.4885,
+        "accuracy": 0.6085
+      }
+    },
+    "anxiety": {
+      "thresholds": [
+        -1.0308,
+        -0.2734,
+        0.0499
+      ],
+      "method": "MaxMacroF1OrdinalThresholding (val)",
+      "test": {
+        "macro_f1": 0.3976,
+        "accuracy": 0.4409
+      },
+      "official_thresholds": [
+        -0.7939,
+        -0.2173,
+        0.1521
+      ],
+      "official_test": {
+        "macro_f1": 0.3831,
+        "accuracy": 0.4542
+      }
+    }
+  }
+}

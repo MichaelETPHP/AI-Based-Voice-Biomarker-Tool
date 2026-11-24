@@ -1,0 +1,218 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AI-Based Voice Biomarker Tool API",
+    "version": "1.0.0",
+    "description": "Screen 25-40 seconds of English speech for voice biomarkers associated with depression and anxiety, using the open-source Kintsugi Health DAM model. Research use only: results are screening signals, not a medical diagnosis.\n\nAuthentication: send your API key as `Authorization: Bearer <key>` or `X-API-Key: <key>`.\n\nAudio: 16-bit PCM WAV, mono, any sample rate (resampled to 16 kHz), 25-40 s, max 10 MB, one English speaker. Send it as the raw request body (`Content-Type: audio/wav`) or as the multipart form field `audio`.\n\nPrivacy: audio is processed in memory/temporary storage and deleted immediately; nothing is stored."
+  },
+  "servers": [{ "url": "https://your-domain.example", "description": "Replaced with this server's address when downloaded from /v1/openapi.json" }],
+  "security": [{ "bearerAuth": [] }, { "apiKeyHeader": [] }],
+  "tags": [
+    { "name": "Service", "description": "Availability" },
+    { "name": "Analysis", "description": "Voice biomarker analysis" }
+  ],
+  "paths": {
+    "/v1/health": {
+      "get": {
+        "tags": ["Service"],
+        "summary": "Service health",
+        "description": "Public. Returns whether the service is up and the AI model is loaded. Use it for monitoring and before sending audio.",
+        "operationId": "getHealth",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service status",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" } } }
+          }
+        }
+      }
+    },
+    "/v1/analyze": {
+      "post": {
+        "tags": ["Analysis"],
+        "summary": "Analyze voice",
+        "description": "Runs the English-language check, then the DAM model. Returns depression (3 levels) and anxiety (4 levels) results, raw scores and a binary screening signal. Typical processing time: 5-15 s on CPU; set client timeouts to at least 120 s.",
+        "operationId": "analyzeVoice",
+        "requestBody": { "$ref": "#/components/requestBodies/WavAudio" },
+        "responses": {
+          "200": {
+            "description": "Analysis result",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AnalysisResult" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "422": {
+            "description": "Speech is not English (DAM supports English only). The model was not run.",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NotEnglishError" } } }
+          },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "500": { "$ref": "#/components/responses/ServerError" },
+          "503": { "$ref": "#/components/responses/Unavailable" }
+        }
+      }
+    },
+    "/v1/language": {
+      "post": {
+        "tags": ["Analysis"],
+        "summary": "Check spoken language",
+        "description": "Detects whether 3-40 s of audio is English speech, without running the depression/anxiety model. Useful to validate recordings before calling /v1/analyze.",
+        "operationId": "checkLanguage",
+        "requestBody": { "$ref": "#/components/requestBodies/WavAudioShort" },
+        "responses": {
+          "200": {
+            "description": "Language result",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LanguageResult" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "413": { "$ref": "#/components/responses/TooLarge" },
+          "429": { "$ref": "#/components/responses/RateLimited" },
+          "503": { "$ref": "#/components/responses/Unavailable" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "description": "Authorization: Bearer <API key>" },
+      "apiKeyHeader": { "type": "apiKey", "in": "header", "name": "X-API-Key" }
+    },
+    "requestBodies": {
+      "WavAudio": {
+        "required": true,
+        "description": "25-40 s, 16-bit PCM WAV, mono, max 10 MB. Raw body or multipart field 'audio'.",
+        "content": {
+          "audio/wav": { "schema": { "type": "string", "format": "binary" } },
+          "application/octet-stream": { "schema": { "type": "string", "format": "binary" } },
+          "multipart/form-data": {
+            "schema": {
+              "type": "object", "required": ["audio"],
+              "properties": { "audio": { "type": "string", "format": "binary", "description": "WAV file" } }
+            }
+          }
+        }
+      },
+      "WavAudioShort": {
+        "required": true,
+        "description": "3-40 s, 16-bit PCM WAV, mono, max 10 MB. Raw body or multipart field 'audio'.",
+        "content": {
+          "audio/wav": { "schema": { "type": "string", "format": "binary" } },
+          "multipart/form-data": {
+            "schema": {
+              "type": "object", "required": ["audio"],
+              "properties": { "audio": { "type": "string", "format": "binary" } }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid audio: missing_audio, invalid_wav (not 16-bit PCM mono WAV), bad_duration, silent",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "Unauthorized": {
+        "description": "Missing or invalid API key",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "TooLarge": {
+        "description": "Audio larger than 10 MB",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "RateLimited": {
+        "description": "Too many requests for this API key in the last hour",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "ServerError": {
+        "description": "Unexpected analysis failure; retry once, then contact support with the X-Request-ID header",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "Unavailable": {
+        "description": "busy, model_not_loaded, api_not_configured or language_check_unavailable; retry later",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object", "required": ["error", "message"],
+        "properties": {
+          "error": { "type": "string", "description": "Machine-readable code", "example": "bad_duration" },
+          "message": { "type": "string", "description": "Human-readable explanation", "example": "The recording is 12.0 s long. Please record about 30 seconds (25-40 s)." }
+        }
+      },
+      "NotEnglishError": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Error" },
+          {
+            "type": "object",
+            "properties": {
+              "language": { "type": "string", "example": "am" },
+              "language_name": { "type": "string", "nullable": true, "example": "Amharic" },
+              "english_prob": { "type": "number", "example": 0.04 }
+            }
+          }
+        ]
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["ok", "unavailable"] },
+          "model_loaded": { "type": "boolean" },
+          "language_check": { "type": "boolean" },
+          "api_version": { "type": "string", "example": "1" }
+        }
+      },
+      "Screen": {
+        "type": "object", "nullable": true,
+        "description": "Binary screening signal tuned on the KintsugiHealth/dam-dataset (sensitivity = specificity, 20% indeterminate budget).",
+        "properties": {
+          "result": { "type": "string", "enum": ["positive", "negative", "indeterminate"] },
+          "label": { "type": "string", "example": "PHQ-9 >= 10" },
+          "lower": { "type": "number" },
+          "upper": { "type": "number" },
+          "sensitivity": { "type": "number", "description": "Measured on the public test split", "example": 0.7134 },
+          "specificity": { "type": "number", "example": 0.7401 }
+        }
+      },
+      "TaskResult": {
+        "type": "object",
+        "properties": {
+          "level": { "type": "integer", "description": "Depression: 0 none (PHQ-9 0-9), 1 mild-moderate (10-14), 2 severe (15+). Anxiety: 0 none (GAD-7 0-4), 1 mild (5-9), 2 moderate (10-14), 3 severe (15+)." },
+          "label": { "type": "string", "example": "Possible signs of mild anxiety" },
+          "raw": { "type": "number", "description": "Raw model score (higher = more signs); monotonic with PHQ-9 / GAD-7", "example": -0.4966 },
+          "thresholds": { "type": "array", "items": { "type": "number" }, "description": "Score cut-offs between levels" },
+          "screen": { "$ref": "#/components/schemas/Screen" }
+        }
+      },
+      "AnalysisResult": {
+        "type": "object",
+        "properties": {
+          "depression": { "$ref": "#/components/schemas/TaskResult" },
+          "anxiety": { "$ref": "#/components/schemas/TaskResult" },
+          "threshold_set": { "type": "string", "enum": ["official", "tuned"] },
+          "language": {
+            "type": "object", "nullable": true,
+            "properties": {
+              "code": { "type": "string", "example": "en" },
+              "name": { "type": "string", "nullable": true, "example": "English" },
+              "english_prob": { "type": "number", "example": 0.997 }
+            }
+          },
+          "duration_s": { "type": "number", "example": 30.0 },
+          "elapsed_s": { "type": "number", "description": "Server processing time", "example": 6.97 }
+        }
+      },
+      "LanguageResult": {
+        "type": "object",
+        "properties": {
+          "language": { "type": "string", "example": "en" },
+          "language_name": { "type": "string", "nullable": true, "example": "English" },
+          "confidence": { "type": "number", "example": 0.99 },
+          "english_prob": { "type": "number", "example": 0.99 },
+          "is_english": { "type": "boolean", "example": true }
+        }
+      }
+    }
+  }
+}

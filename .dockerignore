@@ -1,0 +1,15 @@
+.venv/
+models/
+**/__pycache__/
+*.wav
+*.pyc
+.git/
+.gitignore
+.env
+.claude/
+run.bat
+run.sh
+PROGRESS.md
+Claude Code Prompt*
+frontend/assets/font/
+frontend/assets/logo.png

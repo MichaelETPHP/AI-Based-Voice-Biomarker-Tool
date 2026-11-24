@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F2F2F2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>AI-Based Voice Biomarker Tool</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="preload" href="assets/fonts/excon/Excon-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="style.css?v=202611242015">
+</head>
+<body>
+<div class="app" id="app">
+
+  <header class="topbar">
+    <button class="icon-btn" id="btn-back" aria-label="Back" hidden><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="brand">
+      <span class="brand-logo" aria-hidden="true"><span class="mark"></span></span>
+      <span class="brand-name">AI-Based Voice Biomarker Tool</span>
+    </div>
+    <a class="icon-btn" id="link-docs" href="developers/" aria-label="API documentation" title="API documentation"><i class="fa-solid fa-code"></i></a>
+    <button class="icon-btn" id="btn-info" aria-label="How scores work"><i class="fa-regular fa-circle-question"></i></button>
+  </header>
+
+  <main class="screens">
+
+    <!-- 1. WELCOME -->
+    <section class="screen" id="screen-welcome" aria-labelledby="welcome-title">
+      <div class="body welcome-body">
+        <div class="hero">
+          <div class="hero-logo">
+            <span class="halo"></span>
+            <span class="hero-badge" role="img" aria-label="AI-Based Voice Biomarker Tool logo"><span class="mark"></span></span>
+          </div>
+          <h1 id="welcome-title">AI-Based Voice <span class="nowrap">Biomarker Tool</span></h1>
+          <p class="tagline" data-s="tagline"></p>
+        </div>
+
+        <ul class="features">
+          <li><span class="f-icon"><i class="fa-solid fa-microphone-lines"></i></span>
+            <div><strong data-s="f1Title"></strong><span data-s="f1Text"></span></div></li>
+          <li><span class="f-icon"><i class="fa-solid fa-wave-square"></i></span>
+            <div><strong data-s="f2Title"></strong><span data-s="f2Text"></span></div></li>
+          <li><span class="f-icon"><i class="fa-solid fa-shield-heart"></i></span>
+            <div><strong data-s="f3Title"></strong><span data-s="f3Text"></span></div></li>
+        </ul>
+
+        <div class="welcome-bottom">
+          <label class="consent">
+            <input type="checkbox" id="consent" class="switch-input">
+            <span class="switch" aria-hidden="true"></span>
+            <span class="consent-text" data-s="consent"></span>
+          </label>
+          <div id="secure-warning" class="notice warn" role="alert" hidden>
+            <i class="fa-solid fa-lock-open"></i><span data-s="insecure"></span>
+          </div>
+          <p class="fine"><i class="fa-solid fa-circle-info"></i> <span data-s="disclaimer"></span></p>
+        </div>
+      </div>
+      <div class="dock">
+        <button id="btn-start" class="btn primary" disabled>
+          <i class="fa-solid fa-microphone"></i><span data-s="start"></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. RECORD (immersive) -->
+    <section class="screen" id="screen-record" hidden aria-labelledby="record-status">
+      <div class="body record-body">
+        <div class="topic">
+          <div class="topic-top">
+            <span class="topic-label" data-s="topicLabel"></span>
+            <span class="lang-badge"><i class="fa-solid fa-language"></i><span data-s="englishOnly"></span></span>
+          </div>
+          <p id="topic-text" class="topic-text"></p>
+          <button class="chip" id="btn-topic"><i class="fa-solid fa-shuffle"></i><span data-s="newTopic"></span></button>
+        </div>
+
+        <div class="orb-wrap">
+          <span class="orb-halo h1" id="halo1"></span>
+          <span class="orb-halo h2" id="halo2"></span>
+          <svg class="orb-ring" viewBox="0 0 200 200" aria-hidden="true">
+            <circle class="ring-track" cx="100" cy="100" r="94"></circle>
+            <circle class="ring-progress" id="ring" cx="100" cy="100" r="94"></circle>
+          </svg>
+          <button class="orb" id="btn-mic">
+            <i class="fa-solid fa-microphone"></i>
+            <span class="sr-only" id="mic-label"></span>
+          </button>
+        </div>
+
+        <div class="record-meta">
+          <div class="timer" id="timer" role="timer" aria-live="off">0:30</div>
+          <div class="wave" id="wave" aria-hidden="true"></div>
+          <p class="record-status" id="record-status" aria-live="polite"></p>
+          <p class="mic-error" id="mic-error" role="alert" hidden><i class="fa-solid fa-circle-exclamation"></i><span id="mic-error-text"></span></p>
+        </div>
+      </div>
+      <div class="dock">
+        <button id="btn-cancel" class="btn ghost-light"><i class="fa-solid fa-xmark"></i><span data-s="cancel"></span></button>
+      </div>
+    </section>
+
+    <!-- 3. ANALYZING -->
+    <section class="screen" id="screen-analyzing" hidden>
+      <div class="body center-col">
+        <div class="think">
+          <span class="think-ring"></span>
+          <span class="think-badge" aria-hidden="true"><span class="mark"></span></span>
+        </div>
+        <h2 data-s="analyzingTitle"></h2>
+        <p class="muted" data-s="analyzingText"></p>
+        <ol class="steps" id="steps">
+          <li><i class="fa-solid fa-circle-notch"></i><span data-s="step1"></span></li>
+          <li><i class="fa-solid fa-circle-notch"></i><span data-s="step2"></span></li>
+          <li><i class="fa-solid fa-circle-notch"></i><span data-s="step3"></span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 4. RESULT -->
+    <section class="screen" id="screen-result" hidden aria-labelledby="result-title">
+      <div class="body result-body">
+        <div class="summary" id="summary">
+          <span class="summary-icon" id="summary-icon"></span>
+          <div>
+            <h2 id="result-title" class="summary-title"></h2>
+            <p class="summary-text" id="summary-text"></p>
+          </div>
+        </div>
+
+        <div id="cards" class="cards"></div>
+
+        <p class="result-disclaimer"><i class="fa-solid fa-stethoscope"></i><span data-s="resultDisclaimer"></span></p>
+
+        <div class="quick">
+          <button class="quick-btn" id="btn-how"><i class="fa-regular fa-lightbulb"></i><span data-s="howLink"></span></button>
+          <button class="quick-btn support" id="btn-support"><i class="fa-solid fa-hand-holding-heart"></i><span data-s="supportBtn"></span></button>
+        </div>
+
+      </div>
+      <div class="dock row">
+        <button id="btn-again" class="btn secondary"><i class="fa-solid fa-rotate-right"></i><span data-s="tryAgain"></span></button>
+        <button id="btn-done" class="btn primary"><i class="fa-solid fa-check"></i><span data-s="done"></span></button>
+      </div>
+    </section>
+
+    <!-- 5. ERROR -->
+    <section class="screen" id="screen-error" hidden>
+      <div class="body center-col">
+        <span class="error-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <h2 data-s="errorTitle"></h2>
+        <p id="error-msg" class="muted" role="alert"></p>
+      </div>
+      <div class="dock">
+        <button id="btn-retry" class="btn primary"><i class="fa-solid fa-rotate-right"></i><span data-s="retry"></span></button>
+        <button id="btn-error-home" class="btn secondary"><i class="fa-solid fa-house"></i><span data-s="startOver"></span></button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom sheets -->
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <div class="sheet" id="sheet-how" role="dialog" aria-modal="true" aria-labelledby="how-title" hidden>
+    <span class="grabber" aria-hidden="true"></span>
+    <h2 id="how-title" data-s="howTitle"></h2>
+    <ul class="how-list">
+      <li><i class="fa-solid fa-ear-listen"></i><span data-s="how1"></span></li>
+      <li><i class="fa-solid fa-location-dot"></i><span data-s="how2"></span></li>
+      <li><i class="fa-solid fa-scale-balanced"></i><span data-s="how3"></span></li>
+    </ul>
+    <div class="numbers" id="numbers" hidden>
+      <span class="numbers-title" data-s="yourNumbers"></span>
+      <div class="numbers-grid" id="numbers-grid"></div>
+    </div>
+    <p class="credit" data-s="footer"></p>
+    <button class="btn primary" data-close><span data-s="gotIt"></span></button>
+  </div>
+
+  <div class="sheet" id="sheet-support" role="dialog" aria-modal="true" aria-labelledby="sup-title" hidden>
+    <span class="grabber" aria-hidden="true"></span>
+    <h2 id="sup-title" data-s="supportSheetTitle"></h2>
+    <div class="contacts" id="contacts"></div>
+    <div class="notice danger"><i class="fa-solid fa-truck-medical"></i><span data-s="emergency"></span></div>
+    <span class="numbers-title" data-s="selfCareTitle"></span>
+    <ul class="selfcare">
+      <li><i class="fa-solid fa-people-group"></i><span data-s="care1"></span></li>
+      <li><i class="fa-solid fa-moon"></i><span data-s="care2"></span></li>
+      <li><i class="fa-solid fa-person-walking"></i><span data-s="care3"></span></li>
+      <li><i class="fa-solid fa-calendar-check"></i><span data-s="care4"></span></li>
+    </ul>
+    <button class="btn secondary" data-close><span data-s="close"></span></button>
+  </div>
+</div>
+<!-- Desktop-only: API documentation link (top-right corner of the page) -->
+<a class="docs-corner" href="developers/"><i class="fa-solid fa-code"></i><span data-s="apiDocs"></span><i class="fa-solid fa-arrow-right arrow"></i></a>
+
+<!-- Desktop-only credits (hidden on phones) -->
+<aside class="credits" aria-label="Credits">
+  <div class="credit-row">
+    <span class="credit-label" data-s="creditAnalysis"></span>
+    <img src="assets/kintsugi-logo.svg" alt="Kintsugi" class="kintsugi-logo" width="86" height="20">
+  </div>
+</aside>
+<script src="app.js?v=202611242015"></script>
+</body>
+</html>

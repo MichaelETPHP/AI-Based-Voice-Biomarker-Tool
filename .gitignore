@@ -1,0 +1,33 @@
+# --- AI models (~1.9 GB, downloaded by scripts/download_model.py) ---
+models/
+
+# --- Python ---
+.venv/
+__pycache__/
+*.py[cod]
+
+# --- Secrets / local config ---
+.env
+.env.*
+!.env.example
+.claude/
+
+# --- Audio (never commit voice recordings) ---
+*.wav
+
+# --- Excon font: the ITF Free Font License forbids redistribution via repositories.
+#     Download it from https://www.fontshare.com/fonts/excon (see frontend/assets/fonts/excon/README.md)
+frontend/assets/font/
+frontend/assets/fonts/excon/*
+!frontend/assets/fonts/excon/README.md
+
+# --- Personal / local-only files ---
+frontend/assets/logo.png
+Claude Code Prompt*
+PROGRESS.md
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
