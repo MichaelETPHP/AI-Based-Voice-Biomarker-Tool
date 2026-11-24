@@ -13,6 +13,18 @@
   $$('[data-copy]').forEach((el) => { el.dataset.copy = el.dataset.copy.replaceAll('{{BASE}}', BASE); });
   $$('.numbered code, .checks code').forEach((el) => { el.textContent = el.textContent.replaceAll('{{BASE}}', BASE); });
 
+  // 1a. Syntax highlighting (Prism, self-hosted, manual mode), after {{BASE}} has been filled in.
+  const PRISM_LANG = { bash: 'bash', http: 'http', json: 'json', python: 'python', javascript: 'javascript', xml: 'markup', apex: 'apex' };
+  if (window.Prism) {
+    $$('.code[data-lang]').forEach((block) => {
+      const lang = PRISM_LANG[block.dataset.lang];
+      const code = block.querySelector('pre code');
+      if (!lang || !code || code.id === 'request-text') return;
+      code.classList.add(`language-${lang}`);
+      window.Prism.highlightElement(code);
+    });
+  }
+
   // 1b. Mobile tables render as cards: give every cell its column label.
   $$('.table-wrap table').forEach((table) => {
     const heads = $$('thead th', table).map((th) => th.textContent.trim());

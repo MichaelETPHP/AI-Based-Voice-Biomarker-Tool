@@ -46,7 +46,9 @@ strong, b { font-weight: 550; color: var(--ink); }
 a { color: var(--ink); text-decoration: underline; text-decoration-color: #C8C8C8; text-decoration-thickness: 1px; text-underline-offset: 3px;
   transition: text-decoration-color 160ms ease; }
 code { font-family: var(--mono); font-size: .84em; background: var(--bg-3); color: var(--ink); padding: .14em .42em; border-radius: 6px; border: 1px solid var(--line-2); }
-::selection { background: #E4E4E4; }
+/* Text selection: clearly visible on light pages AND on dark code blocks */
+::selection { background: rgba(144, 21, 136, .18); color: inherit; }
+.code ::selection { background: rgba(120, 160, 255, .38); color: #FFFFFF; }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 6px; }
 
 /* ---------- Header ---------- */
@@ -296,3 +298,25 @@ td code { white-space: nowrap; }
 
 /* The pre-filled request is prose: wrap it instead of scrolling sideways */
 #request-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* ---------- Syntax highlighting (Prism tokens), editor-style dark theme ---------- */
+.code pre code[class*="language-"] { color: #E6E6E6; text-shadow: none; tab-size: 2; }
+.code .token.comment, .code .token.prolog, .code .token.doctype, .code .token.cdata { color: #7F848E; font-style: italic; }
+.code .token.punctuation { color: #ABB2BF; }
+.code .token.keyword, .code .token.important, .code .token.atrule { color: #C678DD; }
+.code .token.string, .code .token.char, .code .token.attr-value, .code .token.template-string,
+.code .token.inserted { color: #98C379; }
+.code .token.number, .code .token.boolean, .code .token.constant { color: #D19A66; }
+.code .token.function, .code .token.function-name { color: #61AFEF; }
+.code .token.class-name, .code .token.builtin, .code .token.variable { color: #E5C07B; }
+.code .token.property, .code .token.tag, .code .token.deleted { color: #E06C75; }
+.code .token.attr-name, .code .token.parameter, .code .token.annotation { color: #D19A66; }
+.code .token.operator, .code .token.entity, .code .token.url, .code .token.regex { color: #56B6C2; }
+.code .token.selector, .code .token.symbol { color: #98C379; }
+.code .language-bash .token.function { color: #61AFEF; font-weight: 500; }          /* curl, ffmpeg, openssl */
+.code .language-bash .token.parameter { color: #D19A66; }                           /* -X, -H, --data-binary */
+.code .language-json .token.property { color: #E06C75; }                            /* JSON keys */
+.code .language-http .token.header-name { color: #E06C75; }
+.code .language-http .token.header-value { color: #98C379; }
+.code .token.bold { font-weight: 600; }
+.code .token.italic { font-style: italic; }

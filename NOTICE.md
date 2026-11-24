@@ -23,6 +23,9 @@ This prototype uses third-party models. It does not include their weights in sou
 ## Font Awesome Free 6.7.2 (frontend/vendor/fontawesome)
 - Served locally, so there is no CDN call. Icons are CC BY 4.0, fonts are SIL OFL 1.1, and code is MIT. See `frontend/vendor/fontawesome/LICENSE.txt`.
 
+## Prism.js 1.29.0 (frontend/vendor/prism)
+- Syntax highlighting on the API docs page, self-hosted (no CDN). MIT license; see `frontend/vendor/prism/LICENSE`.
+
 ## Excon typeface (frontend/assets/fonts/excon)
 - Excon by Alisa Nowak, © Indian Type Foundry, distributed via Fontshare under the **ITF Free Font License (FFL) 2.0**. That license allows free personal and commercial use, including self-hosting as a web font. The official files are used unmodified. The license text comes with the Fontshare download (`License/FFL.txt`).
 - The font files are **not** in the git repository, because the license forbids redistribution through repositories. Each deployment downloads Excon from Fontshare and self-hosts it (see `frontend/assets/fonts/excon/README.md`). Only the variable WOFF2/WOFF files are served.
