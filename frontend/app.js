@@ -108,7 +108,7 @@ const STRINGS = {
     retry: 'Try again',
     startOver: 'Start over',
     errPermission: 'Microphone access was blocked. Allow the microphone in your browser settings and try again.',
-    errNoMic: 'No microphone was found. Connect a microphone and try again.',
+    errNoMic: 'No microphone was found. Plug in a headset or microphone, or turn on your built-in mic (on laptops: open the lid; Windows: Settings > System > Sound > Input), then try again.',
     errMicBusy: 'The microphone is being used by another app. Close it and try again.',
     errInsecure: 'The microphone needs a secure connection (HTTPS) or localhost.',
     errUnsupported: 'This browser cannot record audio. Please use a recent Chrome, Safari, Firefox or Edge.',
