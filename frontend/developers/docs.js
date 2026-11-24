@@ -107,8 +107,12 @@
   links.forEach((_, id) => { const s = document.getElementById(id); if (s) observer.observe(s); });
 
   // 4b. "Get an API key" request form: opens the visitor's email app; nothing is sent to or stored on this server.
-  const CONTACT = ['michaeltaye200', 'gmail.com'].join('@'); // API administrator (assembled at runtime to deter scrapers)
-  $$('.contact-email').forEach((a) => { a.textContent = CONTACT; a.href = `mailto:${CONTACT}`; });
+  // API administrators who receive key requests (assembled at runtime to deter address scrapers)
+  const DOMAIN = 'mulewave.com';
+  const RECIPIENTS = ['wes', 'michael'].map((user) => `${user}@${DOMAIN}`);
+  const CONTACT = RECIPIENTS.join(',');                 // mailto: one email to everyone
+  const CONTACT_LABEL = RECIPIENTS.join(' and ');       // shown on the page
+  $$('.contact-email').forEach((a) => { a.textContent = CONTACT_LABEL; a.href = `mailto:${CONTACT}`; });
 
   const form = document.getElementById('key-form');
   const sent = document.getElementById('key-sent');
@@ -154,7 +158,7 @@
         `Requested from: ${BASE}/developers/`,
       ].join('\n');
 
-      document.getElementById('request-text').textContent = `To: ${CONTACT}\nSubject: ${subject}\n\n${body}`;
+      document.getElementById('request-text').textContent = `To: ${RECIPIENTS.join(', ')}\nSubject: ${subject}\n\n${body}`;
       form.hidden = true;
       sent.hidden = false;
       sent.scrollIntoView({ block: 'start', behavior: 'smooth' });
