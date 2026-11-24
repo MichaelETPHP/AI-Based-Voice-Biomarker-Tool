@@ -254,3 +254,45 @@ td code { white-space: nowrap; }
   html { scroll-behavior: auto; }
   .sidebar, .sidebar.open, .toast, .tab-panel, .scrim { transition: none; animation: none; }
 }
+
+/* ---------- Get an API key ---------- */
+.process { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0 22px; }
+.process-step { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); font-size: 13.5px; line-height: 1.4; color: var(--muted); }
+.process-step i { flex: none; width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: #F7EEF6; color: var(--purple); font-size: 14px; }
+.process-step strong { display: block; color: var(--ink); font-weight: 550; }
+
+.key-form { display: grid; gap: 14px; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-2); }
+.key-form[hidden], .key-sent[hidden] { display: none; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field { display: grid; gap: 6px; }
+.field > span { font-size: 13px; font-weight: 500; color: var(--ink); }
+.field input, .field select, .field textarea {
+  width: 100%; font: inherit; font-size: 16px; /* 16px stops iOS zoom-on-focus */ color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-height: 44px;
+  transition: border-color 160ms ease, box-shadow 160ms ease; -webkit-appearance: none; appearance: none;
+}
+.field select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 34px; }
+.field textarea { resize: vertical; min-height: 110px; line-height: 1.5; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px rgba(36, 36, 36, .08); }
+.field ::placeholder { color: var(--faint); }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; cursor: pointer; }
+.check input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--ink); }
+.form-error { margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDF0EF; border: 1px solid #F3CFCB; color: #8E2A20; font-size: 14px; }
+.btn-block { width: 100%; min-height: 46px; }
+.form-note { display: flex; gap: 8px; align-items: flex-start; margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+.form-note i { margin-top: 3px; color: var(--purple); }
+.key-sent { padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-2); animation: panel-in 240ms var(--ease-out); }
+.key-sent > i { font-size: 26px; color: var(--ok); }
+.key-sent h3 { margin: 10px 0 6px; font-size: 18px; }
+
+@media (max-width: 640px) {
+  .process { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+  .key-form, .key-sent { padding: 16px; margin-left: -4px; margin-right: -4px; }
+  .hide-sm { display: none; }
+  .key-sent .code { margin-left: -16px; margin-right: -16px; }
+}
+
+/* The pre-filled request is prose: wrap it instead of scrolling sideways */
+#request-text { white-space: pre-wrap; overflow-wrap: anywhere; }

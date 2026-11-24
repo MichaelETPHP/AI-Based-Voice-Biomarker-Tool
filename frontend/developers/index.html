@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
   <link rel="preload" href="../assets/fonts/excon/Excon-Variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="../vendor/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="docs.css?v=3">
+  <link rel="stylesheet" href="docs.css?v=5">
 </head>
 <body>
 <header class="topbar">
@@ -21,7 +21,8 @@
   </a>
   <nav class="top-actions">
     <a class="top-link" href="../"><i class="fa-solid fa-arrow-left"></i><span>Back to app</span></a>
-    <a class="btn btn-primary btn-sm" href="/v1/openapi.json" download="voice-biomarker-openapi.json"><i class="fa-solid fa-file-code"></i><span>OpenAPI spec</span></a>
+    <a class="btn btn-ghost btn-sm hide-sm" href="/v1/openapi.json" download="voice-biomarker-openapi.json"><i class="fa-solid fa-file-code"></i><span>OpenAPI spec</span></a>
+    <a class="btn btn-primary btn-sm" href="#get-key" aria-label="Get an API key"><i class="fa-solid fa-key"></i><span>Get API key</span></a>
   </nav>
 </header>
 
@@ -31,6 +32,7 @@
       <p class="nav-group">Getting started</p>
       <a href="#introduction" class="nav-link">Introduction</a>
       <a href="#quickstart" class="nav-link">Quickstart</a>
+      <a href="#get-key" class="nav-link">Get an API key</a>
       <a href="#authentication" class="nav-link">Authentication</a>
       <a href="#audio" class="nav-link">Audio specification</a>
 
@@ -98,7 +100,7 @@
     <section id="quickstart">
       <h2>Quickstart</h2>
       <ol class="numbered">
-        <li><strong>Get an API key</strong> from the administrator of this server (see <a href="#authentication">Authentication</a>).</li>
+        <li><strong>Request an API key</strong> with the <a href="#get-key">request form</a>. Requests are reviewed and the key is sent to you by email.</li>
         <li><strong>Check the service</strong> is up. It needs no key:
           <div class="code" data-lang="bash"><pre><code>curl {{BASE}}/v1/health</code></pre></div>
         </li>
@@ -113,10 +115,69 @@
       </ol>
     </section>
 
+    <!-- ===================== GET A KEY ===================== -->
+    <section id="get-key">
+      <h2>Get an API key</h2>
+      <p>Access is reviewed by hand, because this API processes voice data for health screening. Tell us who you are and how you'll use it, and we'll email your key, usually within 1–2 business days.</p>
+
+      <div class="process">
+        <div class="process-step"><i class="fa-solid fa-pen-to-square"></i><span><strong>1. Request</strong> Fill in the form below</span></div>
+        <div class="process-step"><i class="fa-solid fa-user-check"></i><span><strong>2. Review</strong> We check the use case</span></div>
+        <div class="process-step"><i class="fa-solid fa-key"></i><span><strong>3. Receive</strong> Your key arrives by email</span></div>
+      </div>
+
+      <form class="key-form" id="key-form" novalidate>
+        <div class="field-row">
+          <label class="field"><span>Full name</span><input name="name" type="text" autocomplete="name" required maxlength="120"></label>
+          <label class="field"><span>Work email</span><input name="email" type="email" autocomplete="email" inputmode="email" required maxlength="160"></label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span>Company / organization</span><input name="company" type="text" autocomplete="organization" required maxlength="160"></label>
+          <label class="field"><span>Integration platform</span>
+            <select name="platform">
+              <option>Own backend (Python, Node.js, …)</option>
+              <option>MuleSoft</option>
+              <option>AWS</option>
+              <option>Salesforce</option>
+              <option>Other</option>
+            </select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span>Expected volume</span>
+            <select name="volume">
+              <option>Testing only (&lt; 50 / month)</option>
+              <option>Pilot (50–1,000 / month)</option>
+              <option>Production (1,000+ / month)</option>
+            </select>
+          </label>
+          <label class="field"><span>Website (optional)</span><input name="website" type="url" inputmode="url" placeholder="https://" maxlength="200"></label>
+        </div>
+        <label class="field"><span>How will you use the API?</span>
+          <textarea name="usecase" rows="4" required maxlength="1500" placeholder="For example: a pilot in our clinic app to screen patients before appointments, with clinician follow-up."></textarea>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="agree" required>
+          <span>I will get users' consent before recording, present results as screening signals (not a diagnosis), and follow the <a href="#responsible-use">responsible use</a> guidelines.</span>
+        </label>
+        <p class="form-error" id="form-error" role="alert" hidden></p>
+        <button class="btn btn-primary btn-block" type="submit"><i class="fa-solid fa-paper-plane"></i>Send request</button>
+        <p class="form-note"><i class="fa-solid fa-lock"></i>Nothing is stored on this website. The button opens your email app with the request pre-filled, addressed to <a class="contact-email" href="#">the API administrator</a>.</p>
+      </form>
+
+      <div class="key-sent" id="key-sent" hidden>
+        <i class="fa-solid fa-envelope-circle-check"></i>
+        <h3>Almost done: send the email</h3>
+        <p>Your email app should have opened with the request. Press <strong>Send</strong> there. If nothing opened, copy the request and email it to <a class="contact-email" href="#">the API administrator</a>.</p>
+        <div class="code" data-lang="text"><pre><code id="request-text"></code></pre></div>
+        <button class="btn btn-ghost" type="button" id="key-edit"><i class="fa-solid fa-arrow-left"></i>Edit request</button>
+      </div>
+    </section>
+
     <!-- ===================== AUTHENTICATION ===================== -->
     <section id="authentication">
       <h2>Authentication</h2>
-      <p>Every request except <code>/v1/health</code> and <code>/v1/openapi.json</code> needs an API key. Send it in <strong>one</strong> of these headers:</p>
+      <p>Every request except <code>/v1/health</code> and <code>/v1/openapi.json</code> needs an API key (<a href="#get-key">request one here</a>). Send it in <strong>one</strong> of these headers:</p>
       <div class="code" data-lang="http"><pre><code>Authorization: Bearer YOUR_API_KEY
 # or
 X-API-Key: YOUR_API_KEY</code></pre></div>
@@ -491,6 +552,7 @@ CORS_ORIGINS=https://app.example.com
 
 # Requests per hour per key (default 200)
 RATE_LIMIT_API_PER_HOUR=200</code></pre></div>
+      <p><strong>When a key request arrives by email:</strong> review the use case, generate a key, add <code>client-name:KEY</code> to <code>API_KEYS</code>, restart the app, and reply to the requester with the key over a secure channel.</p>
       <p>Generate a strong key with <code>openssl rand -hex 32</code>. To revoke a key, remove it and restart. Without <code>API_KEYS</code>, the public API is disabled in production (<code>503 api_not_configured</code>), and the web app keeps working.</p>
     </section>
 
@@ -499,7 +561,8 @@ RATE_LIMIT_API_PER_HOUR=200</code></pre></div>
       <h2>Ready to build?</h2>
       <p>Download the spec, request a key, and send your first recording in a few minutes.</p>
       <div class="hero-actions">
-        <a class="btn btn-light" href="/v1/openapi.json" download="voice-biomarker-openapi.json"><i class="fa-solid fa-download"></i>OpenAPI spec</a>
+        <a class="btn btn-light" href="#get-key"><i class="fa-solid fa-key"></i>Request an API key</a>
+        <a class="btn btn-outline-light" href="/v1/openapi.json" download="voice-biomarker-openapi.json"><i class="fa-solid fa-download"></i>OpenAPI spec</a>
         <a class="btn btn-outline-light" href="#quickstart"><i class="fa-solid fa-bolt"></i>Quickstart</a>
       </div>
     </section>
@@ -511,6 +574,6 @@ RATE_LIMIT_API_PER_HOUR=200</code></pre></div>
   </main>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="docs.js?v=2"></script>
+<script src="docs.js?v=4"></script>
 </body>
 </html>

@@ -94,6 +94,67 @@
   }, { rootMargin: '-20% 0px -70% 0px' });
   links.forEach((_, id) => { const s = document.getElementById(id); if (s) observer.observe(s); });
 
+  // 4b. "Get an API key" request form: opens the visitor's email app; nothing is sent to or stored on this server.
+  const CONTACT = ['michaeltaye200', 'gmail.com'].join('@'); // API administrator (assembled at runtime to deter scrapers)
+  $$('.contact-email').forEach((a) => { a.textContent = CONTACT; a.href = `mailto:${CONTACT}`; });
+
+  const form = document.getElementById('key-form');
+  const sent = document.getElementById('key-sent');
+  const formError = document.getElementById('form-error');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const f = new FormData(form);
+      const v = (k) => String(f.get(k) || '').trim();
+      const problems = [];
+      if (!v('name')) problems.push('your name');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) problems.push('a valid work email');
+      if (!v('company')) problems.push('your company');
+      if (v('usecase').length < 20) problems.push('a short description of your use case (20+ characters)');
+      if (!f.get('agree')) problems.push('agreement to the responsible use terms');
+      if (problems.length) {
+        formError.textContent = `Please add ${problems.join(', ')}.`;
+        formError.hidden = false;
+        formError.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        return;
+      }
+      formError.hidden = true;
+
+      const subject = `API key request: ${v('company')}`;
+      const body = [
+        'Hello,',
+        '',
+        'I would like an API key for the AI-Based Voice Biomarker Tool API.',
+        '',
+        `Name: ${v('name')}`,
+        `Email: ${v('email')}`,
+        `Company: ${v('company')}`,
+        `Website: ${v('website') || '-'}`,
+        `Integration platform: ${v('platform')}`,
+        `Expected volume: ${v('volume')}`,
+        '',
+        'Use case:',
+        v('usecase'),
+        '',
+        'I agree to obtain user consent, present results as screening signals (not a diagnosis),',
+        'and follow the responsible use guidelines.',
+        '',
+        `Requested from: ${BASE}/developers/`,
+      ].join('\n');
+
+      document.getElementById('request-text').textContent = `To: ${CONTACT}\nSubject: ${subject}\n\n${body}`;
+      form.hidden = true;
+      sent.hidden = false;
+      sent.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      window.location.href = `mailto:${CONTACT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    });
+    document.getElementById('key-edit').addEventListener('click', () => {
+      sent.hidden = true;
+      form.hidden = false;
+      form.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
+  }
+
   // 5. Mobile navigation drawer
   const sidebar = document.getElementById('sidebar');
   const scrim = document.getElementById('scrim');
